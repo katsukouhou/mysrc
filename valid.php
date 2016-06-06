@@ -31,6 +31,7 @@ try{
     foreach ($warnning_list as $document_key => $document_value){
       foreach ($warnning_list[$document_key] as $uri_key => $uri_value){
         foreach ($warnning_list[$document_key][$uri_key] as $entry_key => $entry_value) {
+          //
           $message = $document_key . ' ' . $uri_key . ' ' . $entry_key . ' ' . $entry_value . "\n";
           fwrite($fp, $message);
         }

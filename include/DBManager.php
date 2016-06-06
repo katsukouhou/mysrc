@@ -21,7 +21,6 @@
       //DBを接続
       $dbh = new PDO($dsn, $username, $password, $options);
     } catch (PDOException $e) {
-      //exit("DB connecting error: {$e->getMessage()}");
       print('DB_connecting_error:'.$e->getMessage());
       die();
     }
