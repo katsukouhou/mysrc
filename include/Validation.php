@@ -18,7 +18,7 @@ function validate()
       //プリペアドステートメントを実行
       $stt->execute();
 
-      //結果セットからレコードのデータをフェッチ
+      //結果セットからレコードのデータをフェッチし、メモリへ読み込む
       $query_num = $stt->rowCount();
       if($query_num != 0) {
         //結果セットからレコードのデータをフェッチ
@@ -30,47 +30,46 @@ function validate()
           $db_recorder_array[$row['id']][$row['document_id']][$row['uri']][$row['entry_id']] = $decrypted_result;
         }
 
-/*↓↓↓ [start]バリエーションを実施 ↓↓↓*/
-        //
+        //バリエーションを実施
         foreach ($db_recorder_array as $id_key => $id_value) {
           foreach ($id_value as $document_id_key => $document_id_value) {
             foreach ($document_id_value as $uri_key => $uri_value) {
               foreach ($uri_value as $entry_id_key => $entry_id_value) {
-                #code
+                //
                 switch($entry_id_key){
                   case 'G'://生年月日 形式：YYYY/MM/DD
+/*↓↓↓ [start]code ↓↓↓*/
                       //
                       $validated_result = 'YYYY/MM/DD';
                       //UpdateSQL文を生成
-/*↓↓↓ [start]code ↓↓↓*/
                       $update_sql .= "UPDATE transaction_cropped
                                       SET result = 'eeee'
                                       WHERE entry_id = 'G';";
 /*↑↑↑ [end]code ↑↑↑*/
-                      //ワーニングメッセージを設定
+                      //必要であれば、ワーニングメッセージを設定
                       $warnning_list[$document_id_key][$uri_key][$entry_id_key]
                           = 'converted to YYYY/MM/DD';
                       break;
                   case 'M'://郵便番号 形式：
+/*↓↓↓ [start]code ↓↓↓*/
                       //
                       $validated_result = 'xxx-xxxx';
                       //UpdateSQL文を生成
-/*↓↓↓ [start]code ↓↓↓*/
                       $update_sql .= "UPDATE transaction_cropped
                                       SET result = 'ffff'
                                       WHERE entry_id = 'M';";
 /*↑↑↑ [end]code ↑↑↑*/
-                      //ワーニングメッセージを設定
+                      //必要であれば、ワーニングメッセージを設定
                       $warnning_list[$document_id_key][$uri_key][$entry_id_key]
                           = 'converted to xxx-xxxx';
                       break;
                   case 'Y'://口座_ゆうちょ 形式：
+/*↓↓↓ [start]code ↓↓↓*/
                       //
                       $validated_result = '????';
                       //UpdateSQL文を生成
-/*↓↓↓ [start]code ↓↓↓*/
 /*↑↑↑ [end]code ↑↑↑*/
-                      //ワーニングメッセージを設定
+                      //必要であれば、ワーニングメッセージを設定
                       $warnning_list[$document_id_key][$uri_key][$entry_id_key]
                           = 'converted to ????';
                       break;
@@ -81,7 +80,7 @@ function validate()
             }
           }
         }
-/*↑↑↑ [end]バリエーションを実施 ↑↑↑*/
+
        //DBデータを更新
        try{
          if ($update_sql) {
@@ -102,7 +101,7 @@ function validate()
     print('Error:'.$e->getMessage());
     die();
   }
-    //
-    return $warnning_list;
+  //
+  return $warnning_list;
 }
 ?>
