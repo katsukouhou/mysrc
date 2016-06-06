@@ -8,18 +8,9 @@ set_time_limit(120);
 $start = microtime( TRUE );
 $visible_format = true;//true=表示、false=非表示
 
-//csvファイルパスを生成
-$csv_data_path = '/Applications/MAMP/htdocs/ie/csv/';
-if (!file_exists ($csv_data_path)){
-  mkdir ("$csv_data_path", 0777, true);
-}
-//csvファイル名を生成
-$datetime = date("Y_m_d_His");//{YYYY_MM_DD_HHMMSS}.csv
-$csv_output_file = $csv_data_path . '/' . $datetime . '.csv';
-
 //
 try{
-  //DBから取得 <未実装>
+/*↓↓↓ [start]テーブルをDBから取得 <未実装> ↓↓↓*/
   $csv_format = array(
     #A
     '[ファイル名]',
@@ -159,6 +150,8 @@ try{
     '[商品配送先_TEL_2]',
     #BQ
     '[商品配送先_TEL_3]');
+/*↑↑↑ [end]テーブルをDBから取得 <未実装> ↑↑↑*/
+
   //
   mb_convert_variables('SJIS','UTF-8',$csv_format);
   $array[$document_id]["format"] = $csv_format;
@@ -191,6 +184,14 @@ try{
       $array[$row['document_id']][$row['uri']][$row['entry_id']] = mb_convert_encoding($row['result'], 'SJIS', 'UTF-8');
     }
 
+    //csvファイルパスを生成
+    $csv_data_path = '/Applications/MAMP/htdocs/ie/csv/';
+    if (!file_exists ($csv_data_path)){
+      mkdir ("$csv_data_path", 0777, true);
+    }
+    //csvファイル名を生成
+    $datetime = date("Y_m_d_His");//{YYYY_MM_DD_HHMMSS}.csv
+    $csv_output_file = $csv_data_path . '/' . $datetime . '.csv';
     //csvファイルを生成
     $fp = fopen($csv_output_file,'w');
     //1行め目の項目を入力（表示の設定なら）
@@ -224,13 +225,14 @@ try{
       //トランザクションをコミット
       $dbh->commit();
 
-      //NXへ通知 <未実装>
+/*↓↓↓ [start]NXへ通知 <未実装> ↓↓↓*/
       #code
+/*↑↑↑ [end]NXへ通知 <未実装> ↑↑↑*/
 
     } catch (Exception $e) {
       //トランザクションをロールバック
       $dbh->rollBack();
-      print('DB update Failed: ' . $e->getMessage());
+      print('DB update Failed:' . $e->getMessage());
     }
   }
 } catch (PDOException $e){
