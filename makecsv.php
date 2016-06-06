@@ -8,12 +8,8 @@ set_time_limit(120);
 $start = microtime( TRUE );
 $visible_format = true;//true=表示、false=非表示
 
-//csv処理フラグ
-const UNPROCESSED = 1; //csv出力未処理
-const PROCESSED = 2;   //csv出力処理済み
-
 //csvファイルパスを生成
-$csv_data_path = '/Applications/MAMP/htdocs/MyTest/csv/';
+$csv_data_path = '/Applications/MAMP/htdocs/ie/csv/';
 if (!file_exists ($csv_data_path)){
   mkdir ("$csv_data_path", 0777, true);
 }
