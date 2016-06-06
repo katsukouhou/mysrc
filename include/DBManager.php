@@ -1,7 +1,11 @@
 <?php
   //csv処理フラグ
-  const UNPROCESSED = 1; //csv出力未処理
-  const PROCESSED = 2;   //csv出力処理済み
+  $unprocessed = 1;
+  $processed = 2;
+
+
+  //対象DBテーブル
+  $target_table = 'transaction_cropped';
 
   //
   function connect() {
