@@ -247,7 +247,7 @@ try{
 //
 $dbh = null;
 
-//
+//性能結果を表示
 memory_usage_end();
 pro_end_time();
 
