@@ -9,7 +9,7 @@ require_once './include/DBManager.php';
 
 /*****-- カスタマイズ項目 --*****/
 date_default_timezone_set('Asia/Tokyo');
-set_time_limit(120);
+set_time_limit(0);
 $visible_format = true;//true=表示、false=非表示
 
 //
@@ -157,7 +157,7 @@ try{
 /*↑↑↑ [end]テーブルをDBから取得 <未実装> ↑↑↑*/
 
   //
-  mb_convert_variables('SJIS','UTF-8',$csv_format);
+  mb_convert_variables('sjis-win','UTF-8',$csv_format);
   $array[$document_id]["format"] = $csv_format;
 
   //DBを接続
@@ -165,7 +165,7 @@ try{
   //処理対象クエリ文字列を作成
   $sql_target = "SELECT id, document_id, entry_id, uri, result
                  FROM {$target_table}
-                 WHERE status = {$unprocessed}";//******** document_idは？
+                 WHERE status = {$unprocessed}";//******** document_idは？　必要！！
   //プリペアドステートメントを生成
   $stt = $dbh->prepare($sql_target);
   //プリペアドステートメントを実行
@@ -185,7 +185,8 @@ try{
         $csv_list[$row['document_id']][] = $row['uri'];
       }
       //resultを設定
-      $array[$row['document_id']][$row['uri']][$row['entry_id']] = mb_convert_encoding($row['result'], 'SJIS', 'UTF-8');
+      $array[$row['document_id']][$row['uri']][$row['entry_id']] =
+        mb_convert_encoding($row['result'], 'sjis-win', 'UTF-8');//用調査！！！
     }
 
     //csvファイルパスを生成
@@ -229,7 +230,7 @@ try{
       //トランザクションをコミット
       $dbh->commit();
 
-/*↓↓↓ [start]NXへ通知 <未実装> ↓↓↓*/
+/*↓↓↓ [start]NXへ通知 <未実装> ➡︎最新方針より必要がなくなる？↓↓↓*/
       #code
 /*↑↑↑ [end]NXへ通知 <未実装> ↑↑↑*/
 

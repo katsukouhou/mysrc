@@ -9,7 +9,7 @@ require_once './include/Validation.php';
 
 /*****-- カスタマイズ項目 --*****/
 date_default_timezone_set('Asia/Tokyo');
-set_time_limit(120);
+set_time_limit(0);
 
 //
 try{
