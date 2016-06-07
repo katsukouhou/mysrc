@@ -1,11 +1,15 @@
 <?php
+/*****-- 性能テスト用のソースファイルの読み込み --*****/
+require_once './include/Utility.php';
+memory_usage_start();
+pro_start_time();
+
 /*****-- DB接続を行うソースファイルの読み込み --*****/
 require_once './include/Validation.php';
 
 /*****-- カスタマイズ項目 --*****/
 date_default_timezone_set('Asia/Tokyo');
 set_time_limit(120);
-$start = microtime( TRUE );
 
 //
 try{
@@ -44,5 +48,9 @@ try{
     print('Error:'.$e->getMessage());
     die();
 }
+
+//
+memory_usage_end();
+pro_end_time();
 
 ?>

@@ -1,11 +1,15 @@
 <?php
+/*****-- 性能テスト用のソースファイルの読み込み --*****/
+require_once './include/Utility.php';
+memory_usage_start();
+pro_start_time();
+
 /*****-- DB接続を行うソースファイルの読み込み --*****/
 require_once './include/DBManager.php';
 
 /*****-- カスタマイズ項目 --*****/
 date_default_timezone_set('Asia/Tokyo');
 set_time_limit(120);
-$start = microtime( TRUE );
 $visible_format = true;//true=表示、false=非表示
 
 //
@@ -161,7 +165,7 @@ try{
   //処理対象クエリ文字列を作成
   $sql_target = "SELECT id, document_id, entry_id, uri, result
                  FROM {$target_table}
-                 WHERE status = {$unprocessed}";
+                 WHERE status = {$unprocessed}";//******** document_idは？
   //プリペアドステートメントを生成
   $stt = $dbh->prepare($sql_target);
   //プリペアドステートメントを実行
@@ -242,5 +246,9 @@ try{
 
 //
 $dbh = null;
+
+//
+memory_usage_end();
+pro_end_time();
 
 ?>
