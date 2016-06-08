@@ -19,7 +19,7 @@ try{
   //DBを接続
   $dbh = connect();
   //処理対象クエリ文字列を作成
-  $sql_target = "SELECT DISTINCT organization_id, paper_id, set_id
+  $sql_target = "SELECT DISTINCT organization_id, group_id
                  FROM {$file_parts_table}
                  WHERE status = {$unprocessed}";
   //プリペアドステートメントを生成
@@ -31,9 +31,7 @@ try{
   if($query_num != 0) {
     //処理対象リストを作成
     while ($row = $stt_target_list->fetch(PDO::FETCH_ASSOC)) {
-      $document_id_index = 0;
-      $document_id = explode('_', $row['paper_id'])[$document_id_index];
-      $target_list[$row['organization_id']][] = $document_id . '_' . $row['set_id'];
+      $target_list[$row['organization_id']][] = $row['group_id'];
     }
     //
     $stt_target_list = null;
@@ -41,10 +39,6 @@ try{
     //データをDB file_partsからメモリへ読み込む
     foreach ($target_list as $target_list_key => $tmp_value) {
       foreach ($tmp_value as $tmp_key => $target_list_value) {
-        //
-        $set_id_index = 1;
-        $set_id = explode('_', $target_list_value)[$set_id_index];
-
         //
         $csv_title_output_flag = false;
         //group_idからdocument_idを取り出す
@@ -87,7 +81,7 @@ try{
         $sql_target = "SELECT entry_id, result, item_id
                        FROM {$file_parts_table}
                        WHERE organization_id = '{$target_list_key}'
-                       AND set_id = '{$set_id}'
+                       AND group_id = '{$target_list_value}'
                        ORDER BY entry_id";
         //プリペアドステートメントを生成
         $stt_target_data_list = $dbh->prepare($sql_target);
@@ -178,7 +172,7 @@ try{
               $update_sql = "UPDATE {$file_parts_table}
                              SET status = {$processed}
                              WHERE organization_id = '{$csv_key}'
-                             AND set_id = '{$set_id}'";
+                             AND group_id = '{$csv_value}'";
               //DB更新を実施
               $dbh->exec($update_sql);
             }

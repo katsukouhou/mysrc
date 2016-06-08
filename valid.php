@@ -53,4 +53,22 @@ try{
 memory_usage_end();
 pro_end_time();
 
+//
+$a = array(
+  'A' => 'aaaa',
+  'B' => 'bbbb',
+  'C' => 'cccc',
+  'D' => 'dddd'
+);
+
+$b = array(
+  'C' => 'cccc',
+  'A' => 'aaaa',
+  'D' => 'dddd',
+  'B' => 'bbbb'
+);
+
+var_dump($a);
+var_dump($b);
+
 ?>
