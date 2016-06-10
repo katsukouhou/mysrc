@@ -1,15 +1,25 @@
 <?php
-//復号URLを指定
-const DECODE_URL = "nxbridge-api.inside.ai/crypt/decode/";
+/**
+* 復号URLを定義
+*/
+const DECODE_URL = "http://nxbridge-api.inside.ai/decode.php";
+/**
+* dataインデックスを定義
+*/
+const DATA_INDEX = 'data';
+/**
+* textインデックスを定義
+*/
+const TEXT_INDEX = 'text';
 
 /**
  * POST方式で復号値を取得する
  * @param string $url リクエストurl
  * @param array $data post用データ
- * @return string
+ * @return string 復号されたデータ
  */
-function decode_object($url, $data) {
-  $postdata = http_build_query($post_data);
+function decode_object($data) {
+  $postdata = http_build_query($data);
   $options = array(
     'http' => array(
       'method' => 'POST',
@@ -19,35 +29,9 @@ function decode_object($url, $data) {
     )
   );
   $context = stream_context_create($options);
-  $result = file_get_contents($url, false, $context);
+  $result = file_get_contents(DECODE_URL, false, $context);
 
-  return $result;
+  return json_decode($result,true)[DATA_INDEX][TEXT_INDEX];
 }
+
 ?>
-<?php
-//POSTデータ
-$data = array(
-    'parts_d_code' => 'aaaaaa',
-    'object' => 'xyzgjdlg'
-);
-$result = decode_object(DECODE_URL, $data);
-//
-echo '<送信データ>';
-echo "<br />";
-echo 'url:';
-var_dump(DECODE_URL);
-echo "<br />";
-echo 'data:';
-var_dump($data);
-echo "<br />";
-?>
-<br /><受信データ>
-<pre>
-<?php
-  if ($result) {
-    var_dump($result);
-  } else {
-    print 'Request failed!' . "\n";
-  }
-?>
-</pre>

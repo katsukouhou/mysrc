@@ -151,8 +151,14 @@
     '[商品配送先_TEL_3]');
     /*↑↑↑ [end]テーブルをDBから取得 <未実装> ↑↑↑*/
 
-  //DB接続関数を定義
-  function connect() {
+    /**
+    * connect
+    *
+    * DBを接続
+    *
+    * @return $dsn
+    */
+  function db_connect() {
 /*↓↓↓ [start]本番環境用に見直す ↓↓↓*/
     //DBアクセスのパラメタを設定
     $dsn = 'mysql:host=127.0.0.1;dbname=test';
@@ -170,6 +176,24 @@
       die();
     }
     return $dbh;
+  }
+
+  /**
+  * sql_execute
+  *
+  * SQL処理を実施
+  *
+  * @param dbh $dbh
+  * @param string $sql_target
+  * @return $stt
+  */
+  function sql_execute($dbh, $sql_target) {
+    //プリペアドステートメントを生成
+    $stt = $dbh->prepare($sql_target);
+    //プリペアドステートメントを実行
+    $stt->execute();
+    //
+    return $stt;
   }
 
 ?>
