@@ -4,7 +4,6 @@
   $processed = 2;
 
   //対象DBテーブル
-  $target_table = 'transaction_cropped';
   $file_parts_table = 'file_parts';
   $csv_format_tabel = 'csv_format';
 
@@ -194,6 +193,113 @@
     $stt->execute();
     //
     return $stt;
+  }
+
+  /**
+  * DBManager
+  *
+  * DBアクセスを管理
+  *
+  * @package none
+  * @subpackage none
+  */
+  class DBManager {
+    /**
+    * __construct
+    *
+    * コンストラクタ関数
+    *
+    * @param none
+    * @return none
+    */
+    public function __construct() {
+      $this->unprocessed = 1;
+      $this->processed = 2;
+      $this->file_parts_table = 'file_parts';
+      $this->csv_format_tabel = 'csv_format';
+    }
+
+    /**
+    * __set
+    *
+    * 属性を設定
+    *
+    * @param $name
+    * @param $value
+    * @return none
+    */
+    public function __set($name, $value) {
+      $this->$name = $value;
+    }
+
+    /**
+    * __get
+    *
+    * 属性を取得
+    *
+    * @param $name
+    * @return $this->$name
+    */
+    public function __get($name) {
+      return $this->$name;
+    }
+
+    /**
+    * db_connect
+    *
+    * DBを接続
+    *
+    * @return $dsn
+    */
+    public function db_connect() {
+/*↓↓↓ [start]本番環境用に見直す ↓↓↓*/
+      //DBアクセスのパラメタを設定
+      //$dsn = 'mysql:host=127.0.0.1;dbname=test';
+      //$username = 'root';
+      //$password = 'root';
+  /*↑↑↑ [start]本番環境用に見直す ↑↑↑*/
+      try {
+        //DBを接続
+        $options = array(
+            PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+        );
+        $dbh = new PDO($this::DSN, $this::USER_NAME, $this::PASSWORD, $options);
+      } catch (PDOException $e) {
+        print('DB_connecting_error:'.$e->getMessage());
+        die();
+      }
+      return $dbh;
+  }
+
+    /**
+    * csvデータ未更新
+    */
+    private $unprocessed;
+    /**
+    * csvデータ更新済
+    */
+    private $processed;
+    /**
+    * 対象DBテーブル
+    */
+    private $file_parts_table;
+    private $csv_format_tabel;
+    /**
+    * DB handler
+    */
+    private $dbh;
+    /**
+    * DSN
+    */
+    const DSN = 'mysql:host=127.0.0.1;dbname=test';
+    /**
+    * ユーザ名
+    */
+    const USER_NAME = 'root';
+    /**
+    * パスワード
+    */
+    const PASSWORD = 'root';
   }
 
 ?>

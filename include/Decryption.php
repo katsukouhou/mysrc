@@ -13,8 +13,7 @@ class Decryption {
   *
   * コンストラクタ関数
   *
-  * @param
-  * @param
+  * @param none
   * @return none
   */
   public function __construct() {
@@ -41,7 +40,6 @@ class Decryption {
 
     return json_decode($result,true)[$this::DATA_INDEX][$this::TEXT_INDEX];
   }
-
 
   /**
   * 復号URLを定義
