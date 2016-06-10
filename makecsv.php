@@ -87,11 +87,13 @@ try{
         $document_id = explode('_', $target_list_value)[$document_id_index];
 
         /**
-        * csvファイルパスを生成 & csvフォーマットを取得
+        * csvファイルパスを生成
         */
         $csv_out_path = CSV_ROOT_PATH . $target_list_key . RELATIVE_PATH . $document_id . '/';
         create_file_path($csv_out_path, 0777);
-        //csvファイル名を生成
+        /**
+        * csvフォーマットを取得
+        */
         $csv_output_file = $csv_out_path . $_csv_file_name;
         if (!file_exists ($csv_output_file)){
           //csv表題を取得
@@ -118,7 +120,7 @@ try{
         * 処理対象内容を復号化し、csv出力リストへ入れる
         */
         //処理対象クエリ文字列を作成
-        $sql_target = "SELECT entry_id, result, parts_d_code
+        $sql_target = "SELECT entry_id, parts_d_code
                        FROM {$file_parts_table}
                        WHERE organization_id = '{$target_list_key}'
                        AND set_id = '{$set_id}'
@@ -132,8 +134,7 @@ try{
           * 復号化を実施
           */
           $post_data = array(
-            'parts_d_code' => $row_csv_data['parts_d_code'],
-            'object' => $row_csv_data['result']
+            'parts_d_code' => $row_csv_data['parts_d_code']
           );
           $decrypted_result = decode_object($post_data);
 
