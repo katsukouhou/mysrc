@@ -32,7 +32,7 @@ set_time_limit(0);
 try{
   //CSVManagerを生成
   $csv_manager = new CSVManager();
-  //
+  //DecryptionManagerを生成
   $decryption_manager = new Decryption();
 
   //DBを接続
@@ -120,8 +120,7 @@ try{
         // SQL処理を実行
         $stt_target_data_list = sql_execute($dbh, $sql_target);
         //クエリ処理を実行
-        $_csv_data_output_list = null;
-        //$csv_manager->$contents_array = null;
+        $csv_manager->csv_array = null;
         while ($row_csv_data = $stt_target_data_list->fetch(PDO::FETCH_ASSOC)) {
           /**
           * 復号化を実施
@@ -135,15 +134,13 @@ try{
           /*↑↑↑ [end]バリエーションを実施<未実装> ↑↑↑*/
 
           //resultを設定
-          $_csv_data_output_list[$target_list_key][$target_list_value][$row_csv_data['entry_id']] =
-          //$csv_manager->$contents_array[$target_list_key][$target_list_value][$row_csv_data['entry_id']] =
+          $csv_manager->csv_array[$target_list_key][$target_list_value][$row_csv_data['entry_id']] =
             mb_convert_encoding($decrypted_result, 'sjis-win', 'UTF-8');
         }
 
         /**
         * csvファイルへ出力
         */
-        $csv_manager->contents_array = $_csv_data_output_list;
         $csv_manager->output_csv();
 
         /**

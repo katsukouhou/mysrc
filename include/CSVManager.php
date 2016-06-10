@@ -1,9 +1,4 @@
 <?php
-/**
-* @global array $GLOBALS['_csv_data_output_list']
-* @name $_csv_data_output_list
-*/
-$GLOBALS['_csv_data_output_list'] = array();
   /**
   * CSVManager
   *
@@ -18,14 +13,14 @@ $GLOBALS['_csv_data_output_list'] = array();
     *
     * コンストラクタ関数
     *
-    * @param
-    * @param
+    * @param none
     * @return none
     */
     public function __construct() {
       date_default_timezone_set('Asia/Tokyo');
       $this->csv_file_name = date("Y_m_d_His") . '.csv';
       $this->csv_title_output_flag = true;
+      $this->csv_array = array();
     }
 
     /**
@@ -140,9 +135,9 @@ $GLOBALS['_csv_data_output_list'] = array();
         $fp = fopen($this->getCSVFileFullPath(),'a');
       }
       //csvファイルへ出力
-      foreach ($this->contents_array as $csv_key => $csv_value){
+      foreach ($this->csv_array as $csv_key => $csv_value){
         foreach ($csv_value as $key => $value) {
-          fputcsv($fp, $this->contents_array[$csv_key][$key]);
+          fputcsv($fp, $this->csv_array[$csv_key][$key]);
         }
       }
       //csvファイルをクローズ
@@ -180,7 +175,7 @@ $GLOBALS['_csv_data_output_list'] = array();
     /**
     * csv出力データ配列
     */
-    private $contents_array;
+    public $csv_array;
   }
 
 ?>
