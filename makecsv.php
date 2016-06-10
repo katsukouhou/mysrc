@@ -13,11 +13,11 @@ require_once './include/DBManager.php';
 /**
 * CSV出力を行うソースファイルの読み込み
 */
-require_once './include/CSVManager.php';
+include_once './include/CSVManager.php';
 /**
 * 復号化を行うソースファイルの読み込み
 */
-require_once './include/Decryption.php';
+include_once './include/Decryption.php';
 
 /**
 * TimeZoneを設定
@@ -28,26 +28,13 @@ date_default_timezone_set('Asia/Tokyo');
 */
 set_time_limit(0);
 
-/**
-* @global bool $GLOBALS['_csv_title_output']
-* @name $_csv_title_output_flag
-* true=表示、false=非表示
-*/
-$GLOBALS['_csv_title_output_flag'] = true;
-/**
-* @global array $GLOBALS['_csv_data_output_list']
-* @name $_csv_data_output_list
-*/
-$GLOBALS['_csv_data_output_list'] = array();
-/**
-* @global array $GLOBALS['_csv_file_name']
-* @name $_csv_file_name
-* {YYYY_MM_DD_HHMMSS}.csv
-*/
-$GLOBALS['_csv_file_name'] = date("Y_m_d_His") . '.csv';
-
 //
 try{
+  //CSVManagerを生成
+  $csv_manager = new CSVManager();
+  //
+  $decryption_manager = new Decryption();
+
   //DBを接続
   $dbh = db_connect();
   //処理対象クエリ文字列を作成
@@ -78,7 +65,7 @@ try{
         $set_id_index = 1;
         $set_id = explode('_', $target_list_value)[$set_id_index];
         //
-        $csv_title_flag = false;
+        $csv_manager->first_time_flag = false;
 
         /**
         * group_idからdocument_idを取り出す
@@ -89,12 +76,13 @@ try{
         /**
         * csvファイルパスを生成
         */
-        $csv_out_path = CSV_ROOT_PATH . $target_list_key . RELATIVE_PATH . $document_id . '/';
-        create_file_path($csv_out_path, 0777);
+        $csv_manager->setCSVFilePath($target_list_key, $document_id);
+        $csv_manager->create_file_path();
+
         /**
         * csvフォーマットを取得
         */
-        $csv_output_file = $csv_out_path . $_csv_file_name;
+        $csv_output_file = $csv_manager->getCSVFileFullPath();
         if (!file_exists ($csv_output_file)){
           //csv表題を取得
           $sql_target = "SELECT entry_id, value
@@ -114,6 +102,10 @@ try{
           //
           $csv_title_flag = true;
           $stt_csv_title_list = null;
+
+          //
+          $csv_manager->csv_title = $csv_format_title;
+          $csv_manager->first_time_flag = true;
         }
 
         /**
@@ -129,28 +121,30 @@ try{
         $stt_target_data_list = sql_execute($dbh, $sql_target);
         //クエリ処理を実行
         $_csv_data_output_list = null;
+        //$csv_manager->$contents_array = null;
         while ($row_csv_data = $stt_target_data_list->fetch(PDO::FETCH_ASSOC)) {
           /**
           * 復号化を実施
           */
           $post_data = array(
-            'parts_d_code' => $row_csv_data['parts_d_code']
+            'parts_d_code' => 'AUXlm2'//$row_csv_data['parts_d_code']
           );
-          $decrypted_result = decode_object($post_data);
+          $decrypted_result = $decryption_manager->decode_object($post_data);
 
           /*↓↓↓ [start]バリエーションを実施<未実装> ↓↓↓*
           /*↑↑↑ [end]バリエーションを実施<未実装> ↑↑↑*/
 
           //resultを設定
           $_csv_data_output_list[$target_list_key][$target_list_value][$row_csv_data['entry_id']] =
+          //$csv_manager->$contents_array[$target_list_key][$target_list_value][$row_csv_data['entry_id']] =
             mb_convert_encoding($decrypted_result, 'sjis-win', 'UTF-8');
         }
 
         /**
         * csvファイルへ出力
         */
-        output_csv($csv_output_file, $_csv_title_output_flag, $csv_title_flag,
-                   $csv_format_title, $_csv_data_output_list);
+        $csv_manager->contents_array = $_csv_data_output_list;
+        $csv_manager->output_csv();
 
         /**
         * csv生成が完了したら、DBのstatusを更新
