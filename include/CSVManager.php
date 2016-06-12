@@ -125,15 +125,50 @@
     * @param array &$contents_array
     * @return none
     */
+    /*
     public function output_csv() {
       if ($this->first_time_flag) {
         $fp = fopen($this->getCSVFileFullPath(),'w');
-        if ($this->csv_title_output_flag) {
+        if ($this->csv_title_output_flag && $this->csv_title) {
           fputcsv($fp, $this->csv_title);
         }
       } else {
         $fp = fopen($this->getCSVFileFullPath(),'a');
       }
+      //csvファイルへ出力
+      foreach ($this->csv_array as $csv_key => $csv_value){
+        foreach ($csv_value as $key => $value) {
+          fputcsv($fp, $this->csv_array[$csv_key][$key]);
+        }
+      }
+      //csvファイルをクローズ
+      fclose($fp);
+    }
+    */
+
+    /**
+    * output_csv
+    *
+    * csvファイルを出力
+    *
+    * @param string file
+    * @param bool $output_flag
+    * @param bool $title_flag
+    * @param string $title
+    * @param array &$contents_array
+    * @return none
+    */
+    public function output_csv() {
+      //
+      if (!file_exists ($this->getCSVFileFullPath())) {
+        $fp = fopen($this->getCSVFileFullPath(),'w');
+        if ($this->csv_title_output_flag && $this->csv_title) {
+          fputcsv($fp, $this->csv_title);
+        }
+      } else {
+        $fp = fopen($this->getCSVFileFullPath(),'a');
+      }
+
       //csvファイルへ出力
       foreach ($this->csv_array as $csv_key => $csv_value){
         foreach ($csv_value as $key => $value) {
