@@ -13,11 +13,11 @@ require_once './include/DBManager.php';
 /**
 * CSV出力を行うソースファイルの読み込み
 */
-include_once './include/CSVManager.php';
+require_once './include/CSVManager.php';
 /**
 * 復号化を行うソースファイルの読み込み
 */
-include_once './include/Decryption.php';
+require_once './include/Decryption.php';
 
 /**
 * TimeZoneを設定
@@ -61,11 +61,11 @@ try{
     */
     foreach ($target_list as $target_list_key => $tmp_value) {
       foreach ($tmp_value as $tmp_key => $target_list_value) {
-        //
+        /**
+        * set_idを取り出す
+        */
         $set_id_index = 1;
         $set_id = explode('_', $target_list_value)[$set_id_index];
-        //
-        $csv_manager->first_time_flag = false;
 
         /**
         * group_idからdocument_idを取り出す
@@ -76,41 +76,7 @@ try{
         /**
         * csvファイルパスを生成
         */
-        $csv_manager->setCSVFilePath($target_list_key, $document_id);
-        $csv_manager->create_file_path();
-
-        /**
-        * csvフォーマットを取得
-        */
-        /*
-        $csv_output_file = $csv_manager->getCSVFileFullPath();
-        if (!file_exists ($csv_output_file)){
-          //csv表題を取得
-          $sql_target = "SELECT entry_id, value
-                         FROM {$csv_format_tabel}
-                         WHERE organization_id = '{$target_list_key}'
-                         AND document_id = '{$document_id}'
-                         ORDER BY entry_id";
-          // SQL処理を実行
-          $stt_csv_title_list = sql_execute($dbh, $sql_target);
-          //csvフォーマットをメモリへ読み込む
-          $csv_format_title = array();
-          if ($stt_csv_title_list->rowCount() != 0) {
-            while ($row_csv_title = $stt_csv_title_list->fetch(PDO::FETCH_ASSOC)) {
-              $csv_format_title[] = $row_csv_title['value'];
-            }
-          }
-          //エンコードを変換
-          mb_convert_variables('sjis-win','UTF-8',$csv_format_title);
-          //
-          $csv_title_flag = true;
-          $stt_csv_title_list = null;
-
-          //
-          $csv_manager->csv_title = $csv_format_title;
-          $csv_manager->first_time_flag = true;
-        }
-        */
+        $csv_manager->create_file_path($target_list_key, $document_id);
 
         /**
         * 処理対象内容を復号化し、csv出力リストへ入れる
@@ -121,30 +87,46 @@ try{
                        WHERE organization_id = '{$target_list_key}'
                        AND set_id = '{$set_id}'
                        ORDER BY entry_id";
-        // SQL処理を実行
+        //SQL処理を実行
         $stt_target_data_list = sql_execute($dbh, $sql_target);
-        //クエリ処理を実行
+        //csvデータを生成
         $csv_manager->csv_array = null;
         $csv_format_title = array();
+        $update_status_sql = '';
+        $update_price_sql = '';
         while ($row_csv_data = $stt_target_data_list->fetch(PDO::FETCH_ASSOC)) {
-          /**
-          * csvフォーマットを取得
-          */
+          //csvフォーマットを取得
           $csv_format_title[] = $row_csv_data['item_name'];
-          /**
-          * 復号化を実施
-          */
+          //復号化を実施
           $post_data = array(
-            'parts_d_code' => 'AUXlm2'//$row_csv_data['parts_d_code']
+            'parts_d_code' => $row_csv_data['parts_d_code']
           );
           $decrypted_result = $decryption_manager->decode_object($post_data);
 
-          /*↓↓↓ [start]バリエーションを実施<未実装> ↓↓↓*
+          //バリエーション処理を実施
+          /*↓↓↓ [start]バリエーションを実施<未実装> ↓↓↓*/
           /*↑↑↑ [end]バリエーションを実施<未実装> ↑↑↑*/
 
           //resultを設定
           $csv_manager->csv_array[$target_list_key][$target_list_value][$row_csv_data['entry_id']] =
             mb_convert_encoding($decrypted_result, 'sjis-win', 'UTF-8');
+
+          //priceを算出し
+          //$target_price = cal_price($decrypted_result, $row_csv_data['type']);
+          $target_price = cal_price_without_type($decrypted_result);
+          //price更新用のSQL文を生成
+          $update_price_sql .=
+                        "UPDATE {$file_parts_table}
+                         SET price = {$target_price}
+                         WHERE parts_d_code = '{$row_csv_data['parts_d_code']}'
+                         AND set_id = '{$set_id}';";
+
+          //status更新用のSQL文を生成
+          $update_status_sql .=
+                        "UPDATE {$file_parts_table}
+                         SET status = {$processed}
+                         WHERE parts_d_code = '{$row_csv_data['parts_d_code']}'
+                         AND set_id = '{$set_id}';";
         }
 
         /**
@@ -153,17 +135,36 @@ try{
         mb_convert_variables('sjis-win','UTF-8',$csv_format_title);
         $csv_manager->csv_title = $csv_format_title;
         $csv_manager->output_csv();
-        //$csv_manager->output_csv();
 
         /**
-        * csv生成が完了したら、DBのstatusを更新
+        * csv生成が完了したら、DBを更新
         */
         try {
           //トランザクションを開始
           $dbh->beginTransaction();
+          //statusを更新
+          //$dbh->exec($update_status_sql);
+          //priceを更新
+          $dbh->exec($update_price_sql);
+          //トランザクションをコミット
+          $dbh->commit();
+        } catch (Exception $e) {
+          //トランザクションをロールバック
+          $dbh->rollBack();
+          print('DB update Failed:' . $e->getMessage());
+        }
+
+        /**
+        * csv生成が完了したら、DBを更新
+        */
+        /*
+        try {
+          //トランザクションを開始
+          $dbh->beginTransaction();
+          //statusを更新
           foreach ($target_list as $csv_key => $tmp_value){
             foreach ($tmp_value as $tmp_key => $csv_value) {
-              //処理対象クエリ文字列を作成
+              //status更新のクエリ文字列を作成
               $update_sql = "UPDATE {$file_parts_table}
                              SET status = {$processed}
                              WHERE organization_id = '{$csv_key}'
@@ -172,13 +173,17 @@ try{
               $dbh->exec($update_sql);
             }
           }
+
+          //priceを更新
+
           //トランザクションをコミット
           $dbh->commit();
         } catch (Exception $e) {
           //トランザクションをロールバック
           $dbh->rollBack();
           print('DB update Failed:' . $e->getMessage());
-        }//try & catch
+        }*///try & catch
+
       }//foreach $tmp_value
     }//foreach $target_list
   }
