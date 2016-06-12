@@ -94,6 +94,7 @@ try{
         $csv_format_title = array();
         $update_status_sql = '';
         $update_price_sql = '';
+        $update_character_aggregation_sql = '';
         while ($row_csv_data = $stt_target_data_list->fetch(PDO::FETCH_ASSOC)) {
           //csvフォーマットを取得
           $csv_format_title[] = $row_csv_data['item_name'];
@@ -109,7 +110,7 @@ try{
 
           //resultを設定
           $csv_manager->csv_array[$target_list_key][$target_list_value][$row_csv_data['entry_id']] =
-            mb_convert_encoding($decrypted_result, 'sjis-win', 'UTF-8');
+            $decrypted_result;
 
           //priceを算出し
           //$target_price = cal_price($decrypted_result, $row_csv_data['type']);
@@ -127,12 +128,20 @@ try{
                          SET status = {$processed}
                          WHERE parts_d_code = '{$row_csv_data['parts_d_code']}'
                          AND set_id = '{$set_id}';";
+
+          //不読と可読の文字数を算出
+          list($read_count, $unread_count) = aggregate_characters($decrypted_result);
+          //不読と可読の文字数の更新用のSQLを生成
+          $update_character_aggregation_sql .=
+                        "UPDATE {$file_parts_table}
+                         SET read_count = {$read_count}, unread_count = {$unread_count}
+                         WHERE parts_d_code = '{$row_csv_data['parts_d_code']}'
+                         AND set_id = '{$set_id}';";
         }
 
         /**
         * csvファイルへ出力
         */
-        mb_convert_variables('sjis-win','UTF-8',$csv_format_title);
         $csv_manager->csv_title = $csv_format_title;
         $csv_manager->output_csv();
 
@@ -146,46 +155,20 @@ try{
           //$dbh->exec($update_status_sql);
           //priceを更新
           $dbh->exec($update_price_sql);
+          //不読と可読の文字数を更新
+          $dbh->exec($update_character_aggregation_sql);
           //トランザクションをコミット
           $dbh->commit();
         } catch (Exception $e) {
           //トランザクションをロールバック
           $dbh->rollBack();
           print('DB update Failed:' . $e->getMessage());
-        }
-
-        /**
-        * csv生成が完了したら、DBを更新
-        */
-        /*
-        try {
-          //トランザクションを開始
-          $dbh->beginTransaction();
-          //statusを更新
-          foreach ($target_list as $csv_key => $tmp_value){
-            foreach ($tmp_value as $tmp_key => $csv_value) {
-              //status更新のクエリ文字列を作成
-              $update_sql = "UPDATE {$file_parts_table}
-                             SET status = {$processed}
-                             WHERE organization_id = '{$csv_key}'
-                             AND set_id = '{$set_id}'";
-              //DB更新を実施
-              $dbh->exec($update_sql);
-            }
-          }
-
-          //priceを更新
-
-          //トランザクションをコミット
-          $dbh->commit();
-        } catch (Exception $e) {
-          //トランザクションをロールバック
-          $dbh->rollBack();
-          print('DB update Failed:' . $e->getMessage());
-        }*///try & catch
+        }//try & catch
 
       }//foreach $tmp_value
+
     }//foreach $target_list
+
   }
 } catch (PDOException $e){
     print('Error:'.$e->getMessage());

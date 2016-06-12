@@ -24,8 +24,8 @@
       $memory = (!function_exists('memory_get_usage')) ? '0' : round(memory_get_peak_usage()/1024/1024, 2).'MB';
       $memory_usage_message .= $_SERVER['PHP_SELF'] . ' Memory usage <Peak> ' . $memory . "\n";
     }
-    //
-    print $memory_usage_message;
+
+    print nl2br($memory_usage_message);
   }
 
   /* 実行時間表示 true=表示、false=非表示 */
@@ -52,7 +52,8 @@
       $endtime = $mtime2[1] + $mtime2[0];
       $totaltime = ($endtime - $startTime);
       $totaltime = number_format($totaltime, 7);
-      print "process time: " . $totaltime . "s\n";
+      
+      print nl2br("process time: " . $totaltime . "s\n");
     }
   }
 

@@ -120,6 +120,9 @@
       if (!file_exists ($this->getCSVFileFullPath())) {
         $fp = fopen($this->getCSVFileFullPath(),'w');
         if ($this->csv_title_output_flag && $this->csv_title) {
+          //エンコード変換を実施
+          mb_convert_variables('sjis-win','UTF-8', $this->csv_title);
+          //csvファイルへ出力
           fputcsv($fp, $this->csv_title);
         }
       } else {
@@ -129,6 +132,9 @@
       //csvファイルへ出力
       foreach ($this->csv_array as $csv_key => $csv_value){
         foreach ($csv_value as $key => $value) {
+          //エンコード変換を実施
+          mb_convert_variables('sjis-win','UTF-8', $this->csv_array);
+          //csvファイルへ出力
           fputcsv($fp, $this->csv_array[$csv_key][$key]);
         }
       }

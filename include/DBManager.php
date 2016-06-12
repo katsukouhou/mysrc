@@ -260,6 +260,20 @@
     return $target_price;
   }
 
+  /**
+  * aggregate_characters
+  *
+  * priceを算出
+  *
+  * @param string $value
+  * @return read_count, unread_count
+  */
+  function aggregate_characters($value) {
+    $total_count = mb_strlen($value,'UTF-8');
+    $unread_count = substr_count($value, '●');
+    $read_count = $total_count - $unread_count;
+    return array($read_count, $unread_count);
+  }
 
 
   /**
